@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testes:
+    name: Lint e testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar dependências
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Pytest
+        # Nenhum teste faz chamada de rede: a API do Gemini é sempre dublada.
+        # O CI roda sem GOOGLE_API_KEY, e é isso que prova a afirmação.
+        run: pytest
+
+  pipeline-offline:
+    name: Pipeline ponta a ponta (sem API)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - run: pip install -r requirements.txt
+
+      - name: Seed + pipeline em modo offline
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python -m src.seed_data --quantidade 30 --semente 1
+          python -m src.pipeline --sem-ia
+
+      - name: Conferir as saídas
+        run: |
+          test -f data/abordagens_enriquecidas.csv
+          test -f img/causas_de_risco.png
+          test -f img/abordagens_por_rodovia.png
+
+  imagem:
+    name: Build da imagem Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t etl-sinistros:ci .

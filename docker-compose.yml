@@ -1,0 +1,29 @@
+# Pipeline sem instalar nada:
+#   cp .env.example .env    (e preencha GOOGLE_API_KEY)
+#   docker compose run --rm pipeline
+#
+# Para gerar a massa de abordagens antes:
+#   docker compose run --rm seed
+#
+# Para rodar offline, sem gastar cota de API:
+#   docker compose run --rm pipeline src.pipeline --sem-ia
+
+services:
+  pipeline:
+    build: .
+    env_file: .env
+    environment:
+      # Dentro do container, matplotlib precisa de backend sem janela.
+      MPLBACKEND: Agg
+    volumes:
+      # data/ e img/ montados: as saídas ficam na máquina, não na imagem.
+      - ./data:/app/data
+      - ./img:/app/img
+      - ./logs:/app/logs
+    command: ["src.pipeline"]
+
+  seed:
+    build: .
+    volumes:
+      - ./data:/app/data
+    command: ["src.seed_data", "--quantidade", "50"]

@@ -1,10 +1,25 @@
-import pandas as pd
-import random
-from src.config import DATA_DIR
+"""Gera a massa de abordagens ficticias a partir de locais reais do Datatran.
 
-# Configurações
-ARQUIVO_SAIDA = DATA_DIR / "dados_prf.csv"
-ARQUIVOS_ACIDENTES = [DATA_DIR / "datatran2024.csv", DATA_DIR / "datatran2025.csv"]
+    python -m src.seed_data --quantidade 50
+
+Os condutores, placas e veiculos sao inventados; o que vem da base aberta sao os
+trechos (UF, BR, km, municipio) e a causa de sinistro mais frequente neles. E
+esse cruzamento que torna o alerta especifico em vez de generico.
+"""
+
+import argparse
+import logging
+import random
+from datetime import datetime
+
+import pandas as pd
+
+from src.config import ARQUIVOS_SINISTROS, INPUT_FILE
+
+log = logging.getLogger("etl.seed")
+
+ARQUIVO_SAIDA = INPUT_FILE
+ARQUIVOS_ACIDENTES = ARQUIVOS_SINISTROS
 
 # Dados fictícios para gerar aleatoriedade
 NOMES = [
@@ -40,8 +55,10 @@ def gerar_placa():
     return f"{letras}-{numeros}"
 
 
-def gerar_dataset_ficticio():
-    print("🔄 Lendo dados reais de acidentes (Datatran)...")
+def gerar_dataset_ficticio(quantidade: int = 50, semente: int | None = None):
+    if semente is not None:
+        random.seed(semente)
+    log.info("lendo a base aberta de sinistros")
     dfs = []
 
     for arquivo in ARQUIVOS_ACIDENTES:
@@ -50,23 +67,24 @@ def gerar_dataset_ficticio():
             df = pd.read_csv(arquivo, sep=";", encoding="latin1", low_memory=False)
             dfs.append(df)
         except Exception as e:
-            print(f"⚠️ Erro ao ler {arquivo.name}: {e}")
+            log.warning("erro ao ler %s: %s", arquivo.name, e)
 
     if not dfs:
-        print("❌ Nenhum arquivo de acidentes encontrado na pasta data/.")
+        log.error("nenhuma base de sinistros encontrada em data/")
         return
 
     df_total = pd.concat(dfs)
 
-    # Vamos pegar uma amostra de 50 acidentes para usar como base para nossas "abordagens"
-    # Focamos nas colunas que dão contexto: Onde foi? Qual a causa comum lá?
-    amostra = df_total.sample(50)[
+    # Amostra dos trechos: o que interessa e o contexto (onde foi, qual a causa
+    # frequente ali), nao a vitima do registro original.
+    quantidade = min(quantidade, len(df_total))
+    amostra = df_total.sample(quantidade, random_state=semente)[
         ["uf", "br", "km", "municipio", "causa_acidente", "tipo_acidente"]
     ]
 
     novos_dados = []
 
-    print("🛠️ Gerando motoristas fictícios baseados nos locais de risco...")
+    log.info("gerando %d condutores ficticios sobre trechos reais", quantidade)
 
     count = 1
     for _, row in amostra.iterrows():
@@ -75,7 +93,7 @@ def gerar_dataset_ficticio():
             "Nome": random.choice(NOMES),
             "Veiculo": random.choice(VEICULOS),
             "Placa": gerar_placa(),
-            "Data": "2025-11-27",  # Data fictícia da abordagem
+            "Data": datetime.now().strftime("%Y-%m-%d"),
             "Horario": f"{random.randint(6, 22):02d}:{random.randint(0, 59):02d}",
             "UF": row["uf"],
             "BR": row["br"],
@@ -86,24 +104,31 @@ def gerar_dataset_ficticio():
         novos_dados.append(motorista)
         count += 1
 
-    # Salva o novo arquivo dados_prf.csv
+    # Grava a massa de abordagens
     df_final = pd.DataFrame(novos_dados)
 
     try:
+        ARQUIVO_SAIDA.parent.mkdir(parents=True, exist_ok=True)
         df_final.to_csv(ARQUIVO_SAIDA, index=False)
-        print(
-            f"✅ Sucesso! Novo arquivo '{ARQUIVO_SAIDA}' gerado com {len(df_final)} registros."
-        )
-        print("Exemplo de contexto adicionado:")
-        print(df_final[["BR", "KM", "Causa_Frequente"]].head(3))
+        log.info("%s gerado com %d registros", ARQUIVO_SAIDA, len(df_final))
+        return df_final
 
     except PermissionError:
-        print("❌ ERRO DE PERMISSÃO:")
-        print(
-            f"O arquivo '{ARQUIVO_SAIDA}' está aberto em outro programa (provavelmente Excel)."
+        log.error(
+            "sem permissao para escrever em %s — o arquivo esta aberto em outro programa?",
+            ARQUIVO_SAIDA,
         )
-        print("➡️  Feche o arquivo e tente rodar o script novamente.")
+        return None
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--quantidade", type=int, default=50)
+    ap.add_argument("--semente", type=int, default=None, help="torna a amostra reproduzivel")
+    args = ap.parse_args(argv)
+    logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(message)s")
+    return 0 if gerar_dataset_ficticio(args.quantidade, args.semente) is not None else 1
 
 
 if __name__ == "__main__":
-    gerar_dataset_ficticio()
+    raise SystemExit(main())

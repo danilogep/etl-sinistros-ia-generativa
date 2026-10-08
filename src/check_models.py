@@ -1,4 +1,5 @@
 import google.generativeai as genai
+
 from src.config import GOOGLE_API_KEY
 
 # Configura a chave

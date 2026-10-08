@@ -1,0 +1,7 @@
+﻿UserID,Nome,Veiculo,Placa,Data,Horario,UF,BR,KM,Municipio,Causa_Frequente,Mensagem_IA
+2,Patricia Rocha,Ford Ranger,VWX-5899,2025-11-27,17:25,AP,156,510,PRACUUBA,Reação tardia ou ineficiente do condutor,"Patricia, Ford Ranger, BR-156 KM 510 (Pracuuba): Atenção! Reação tardia causa acidentes frequentes. Dirija com atenção redobrada!"
+3,Carlos Silva,Nissan Kicks,ABC-2850,2025-11-27,13:46,SP,381,37,ATIBAIA,Ausência de reação do condutor,"Carlos Silva, Kicks, BR-381, KM 37, Atibaia: Atenção redobrada! Alto risco de acidentes por falta de reação. Dirija com foco!"
+4,Ricardo Almeida,Ford Ranger,MNO-4765,2025-11-27,22:40,PR,277,"721,9",FOZ DO IGUACU,Manobra de mudança de faixa,"Ricardo Almeida, Ford Ranger, BR-277 KM 721,9 (Foz): Atenção! Alto risco de acidentes por mudança de faixa. Dirija com cuidado!"
+5,Bruno Lima,Jeep Compass,STU-8317,2025-11-27,15:42,SC,470,135,RIO DO SUL,Acessar a via sem observar a presença dos outros veículos,"**ALERTA, BRUNO!** KM 135, Rio do Sul (BR-470): Atenção ao acessar a via! Risco alto de acidentes por falta de atenção."
+6,Julia Oliveira,Jeep Compass,GHI-6700,2025-11-27,20:31,PE,428,186,PETROLINA,Ingestão de álcool pelo condutor,"Julia Oliveira, Jeep Compass, BR-428 KM 186: Álcool e direção = risco de acidente. Dirija com responsabilidade!"
+7,Patricia Rocha,Toyota Corolla,JKL-4162,2025-11-27,20:38,RJ,101,319,SAO GONCALO,Manobra de mudança de faixa,"Patricia Rocha, Corolla, BR-101 KM 319 (São Gonçalo): Cuidado! Alto risco de acidentes por mudança de faixa. Redobre a atenção."

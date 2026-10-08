@@ -1,7 +1,20 @@
-# Arquivos de ambiente e senhas
+# Segredos
 .env
-__pycache__/
+*.env
+!.env.example
 
-# Pasta do ambiente virtual
+# Ambiente virtual (instale com `pip install -r requirements.txt`)
 venv/
 .venv/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# Saídas do pipeline (regeradas por `python -m src.pipeline`)
+logs/
+data/abordagens.csv
+data/abordagens_enriquecidas.csv
