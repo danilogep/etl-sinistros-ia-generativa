@@ -230,3 +230,7 @@ neles — é esse cruzamento que dá contexto ao alerta.
 ## Licença
 
 Código sob [MIT](LICENSE). Os dados seguem a licença da fonte original.
+
+---
+
+<sub>Parte do meu portfólio — mais projetos em **[github.com/danilogep](https://github.com/danilogep)** · [LinkedIn](https://linkedin.com/in/danilogep)</sub>
